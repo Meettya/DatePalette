@@ -26,15 +26,15 @@ html
 
         DatePalette = require 'datepalette'
 
-        DatePalette.init "#data_palette_one", 
-          -> $("#data_palette_one").val @getResult(); null,
+        DatePalette.init "#date_palette_one", 
+          -> $("#date_palette_one").val @getResult(); null,
           'global.debug' : true
 
-        DatePalette.init "#data_palette_two_wrapper", 
+        DatePalette.init "#date_palette_two_wrapper", 
           -> 
-            $("#data_palette_two_month").text @getResult 'MM'
-            $("#data_palette_two_year").text @getResult 'YYYY'
-            $("#data_palette_two_result").data 'value', @getResult()
+            $("#date_palette_two_month").text @getResult 'MM'
+            $("#date_palette_two_year").text @getResult 'YYYY'
+            $("#date_palette_two_result").data 'value', @getResult()
             null
           ,
           null,
@@ -57,7 +57,7 @@ html
       div(class='ui-widget-content')
         label
           | Birthday:
-          input#data_palette_one(type='text', name='data_palette_one', readonly)
+          input#date_palette_one(type='text', name='date_palette_one', readonly)
 
     #example_second(class='ui-widget example-window')
       div(class='ui-widget-header')
@@ -65,9 +65,9 @@ html
       div(class='ui-widget-content')
         label
           | Credit card valid thru date: 
-          span#data_palette_two_result
-            span#data_palette_two_month(class='card_caption')
+          span#date_palette_two_result
+            span#date_palette_two_month(class='card_caption')
             span(class='card_caption') /
-            span#data_palette_two_year(class='card_caption')
-        #data_palette_two_wrapper
+            span#date_palette_two_year(class='card_caption')
+        #date_palette_two_wrapper
 
