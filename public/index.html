@@ -9,7 +9,7 @@
 (function() {
 
   head.js("vendor/jquery-1.7.1.min.js", "vendor/jquery-ui-1.8.18.custom.min.js", "vendor/underscore-min.js", "vendor/moment.min.js", "vendor/lang-all.min.js", "vendor/metamorph.js", "vendor/jquery.foundation.reveal.js", {
-    "widget": "js/widget.datepalette.min.js"
+    "widget": "js/widget.datepalette.js"
   });
 
 }).call(this);
@@ -20,16 +20,16 @@
   head.ready("widget", function() {
     var DatePalette;
     DatePalette = require('datepalette');
-    DatePalette.init("#data_palette_one", function() {
-      $("#data_palette_one").val(this.getResult());
+    DatePalette.init("#date_palette_one", function() {
+      $("#date_palette_one").val(this.getResult());
       return null;
     }, {
       'global.debug': true
     });
-    DatePalette.init("#data_palette_two_wrapper", function() {
-      $("#data_palette_two_month").text(this.getResult('MM'));
-      $("#data_palette_two_year").text(this.getResult('YYYY'));
-      $("#data_palette_two_result").data('value', this.getResult());
+    DatePalette.init("#date_palette_two_wrapper", function() {
+      $("#date_palette_two_month").text(this.getResult('MM'));
+      $("#date_palette_two_year").text(this.getResult('YYYY'));
+      $("#date_palette_two_result").data('value', this.getResult());
       return null;
     }, null, 'inline');
     return null;
@@ -47,15 +47,15 @@
       <div class="ui-widget-header"><span>Modal popup example with one input</span></div>
       <div class="ui-widget-content">
         <label>Birthday:
-          <input id="data_palette_one" type="text" name="data_palette_one" readonly>
+          <input id="date_palette_one" type="text" name="date_palette_one" readonly>
         </label>
       </div>
     </div>
     <div id="example_second" class="ui-widget example-window">
       <div class="ui-widget-header"><span>Inline picker example with two span <br> and div data-value as storage</span></div>
       <div class="ui-widget-content">
-        <label>Credit card valid thru date: <span id="data_palette_two_result"><span id="data_palette_two_month" class="card_caption"></span><span class="card_caption">/</span><span id="data_palette_two_year" class="card_caption"></span></span></label>
-        <div id="data_palette_two_wrapper"></div>
+        <label>Credit card valid thru date: <span id="date_palette_two_result"><span id="date_palette_two_month" class="card_caption"></span><span class="card_caption">/</span><span id="date_palette_two_year" class="card_caption"></span></span></label>
+        <div id="date_palette_two_wrapper"></div>
       </div>
     </div>
   </body>
