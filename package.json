@@ -1,7 +1,7 @@
 {
     "name": "data-palette",
-    "description": "DatePalette is a awesome any datapicker replacement",
-    "version": "0.5.2",
+    "description": "DatePalette is a awesome any datepicker replacement",
+    "version": "0.5.4",
     "author": {
         "name": "Dmitry Karpich",
         "email": "meettya@gmail.com",
