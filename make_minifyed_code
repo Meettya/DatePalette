@@ -1,0 +1,48 @@
+#!/usr/bin/env coffee
+
+stitch  = require('stitch')
+fs      = require('fs')
+jsp 		= require("uglify-js").parser;
+pro 		= require("uglify-js").uglify
+
+my_package = stitch.createPackage(
+  # Specify the paths you want Stitch to automatically bundle up
+  paths: [
+    __dirname + '/src'
+    __dirname + '/node_modules/dendrite/src'
+    __dirname + '/node_modules/whet.extend/src'
+  ]
+  # Specify your base libraries
+  dependencies: [
+    __dirname + '/helpers/console_stub.js'
+  ]
+)
+
+my_package.compile (err, source) ->
+	# go to our public lib
+	process.chdir './public/js'
+	###
+	Write full version
+	###
+	fs.writeFile 'widget.datepalette.js', source, encoding='utf8', (err) ->
+		throw err if err?
+		console.log 'Compiled widget.datepalette.js'
+	
+	###
+	And minifyed
+	###
+	ast = jsp.parse(source) # parse code and get the initial AST
+	ast = pro.ast_lift_variables(ast) #  merge and move var declarations to the scop of the scope
+	ast = pro.ast_mangle(ast) # get a new AST with mangled names
+	ast = pro.ast_squeeze(ast) # get an AST with compression optimizations
+	final_code = pro.gen_code(ast) # compressed code here
+
+	fs.writeFile 'widget.datepalette.min.js', final_code, encoding='utf8', (err) ->
+		throw err if err?
+		console.log 'Compiled widget.datepalette.min.js'
+
+
+
+
+
+

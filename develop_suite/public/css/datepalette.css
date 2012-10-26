@@ -1,0 +1,81 @@
+/* for reveal modal window */
+.reveal-modal {
+  margin-left: -200px !important;
+  padding: 0 !important;
+  width: auto !important;
+}
+.example-window {
+  width: 30em;
+  margin-top: 3em;
+}
+.ui-widget-content {
+  padding: 0.5em 0 2em 1em;
+}
+#data_palette_two_wrapper {
+  margin-top: 1em;
+}
+.ui-datepalette {
+  width: 18em;
+/* spaces for clear rouneded corners */
+  padding: 0.3em;
+}
+.ui-datepalette ul {
+  list-style-type: none;
+  padding: 0;
+  display: table;
+  border-spacing: 0.1em;
+  width: 100%;
+}
+.ui-datepalette li {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+  cursor: pointer;
+}
+.ui-datepalette-header {
+  line-height: 1.8em;
+  text-align: center;
+}
+.ui-datepalette-leaf {
+  margin: 0 auto;
+  height: 1.6em;
+}
+.ui-datepalette-root {
+  height: 1.85em;
+}
+.ui-datepalette-margin {
+  margin: 0.4em 0 0.1em 0;
+}
+.ui-datepalette-root .ui-datepalette-leaf-removed,
+.ui-datepalette-leaf .ui-datepalette-leaf-removed {
+  display: none !important;
+}
+.ui-datepalette-root .ui-datepalette-leaf-hide,
+.ui-datepalette-leaf .ui-datepalette-leaf-hide {
+  visibility: hidden !important;
+}
+label,
+input,
+input.hasDatePalette,
+.card_caption {
+  font: 100% helvetica, sans-serif;
+  color: #3d3d3d;
+}
+input,
+input.hasDatePalette {
+  margin-left: 0.4em;
+  width: 8.4em;
+  border: 1px solid;
+  padding: 4px 34px 4px 4px;
+}
+input.hasDatePalette {
+  background: url("DatePicker_kendoui.png") right no-repeat;
+  background-color: #fff;
+  cursor: pointer;
+}
+.card_caption {
+  font-weight: bold;
+}
+.month-caption {
+  padding: 0;
+}

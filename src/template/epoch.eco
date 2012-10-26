@@ -1,0 +1,8 @@
+<ul class="ui-datepalette-root ui-datepalette-margin">
+  <% for elem in @ranges: %>
+    <% li_class = "ui-state-default ui-corner-all" %>
+    <% li_class += " ui-state-disabled" unless elem.in_bounds  %>
+    <% li_class += " ui-state-highlight"   if elem.number is @selected  %>
+    <li class="<%= li_class %>" data-datepalette="<%= elem.number %>"><%= elem.name %></li>
+  <% end %>
+</ul>

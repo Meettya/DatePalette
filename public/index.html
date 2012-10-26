@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>DatePalette develop test page</title>
+    <!-- only head.js needed at first-->
+    <script src="vendor/head.min.js"></script>
+    <!--head.js loader--><script type="text/javascript">
+(function() {
+
+  head.js("vendor/jquery-1.7.1.min.js", "vendor/jquery-ui-1.8.18.custom.min.js", "vendor/underscore-min.js", "vendor/moment.min.js", "vendor/lang-all.min.js", "vendor/metamorph.js", "vendor/jquery.foundation.reveal.js", {
+    "widget": "js/widget.datepalette.min.js"
+  });
+
+}).call(this);
+</script>
+    <!-- js initiator--><script type="text/javascript">
+(function() {
+
+  head.ready("widget", function() {
+    var DatePalette;
+    DatePalette = require('datepalette');
+    DatePalette.init("#data_palette_one", function() {
+      $("#data_palette_one").val(this.getResult());
+      return null;
+    }, {
+      'global.debug': true
+    });
+    DatePalette.init("#data_palette_two_wrapper", function() {
+      $("#data_palette_two_month").text(this.getResult('MM'));
+      $("#data_palette_two_year").text(this.getResult('YYYY'));
+      $("#data_palette_two_result").data('value', this.getResult());
+      return null;
+    }, null, 'inline');
+    return null;
+  });
+
+}).call(this);
+</script>
+    <!-- styles-->
+    <link rel="stylesheet" href="css/cupertino/jquery-ui-1.8.16.custom.css">
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/datepalette.css">
+  </head>
+  <body>
+    <div id="example_first" class="ui-widget example-window">
+      <div class="ui-widget-header"><span>Modal popup example with one input</span></div>
+      <div class="ui-widget-content">
+        <label>Birthday:
+          <input id="data_palette_one" type="text" name="data_palette_one" readonly>
+        </label>
+      </div>
+    </div>
+    <div id="example_second" class="ui-widget example-window">
+      <div class="ui-widget-header"><span>Inline picker example with two span <br> and div data-value as storage</span></div>
+      <div class="ui-widget-content">
+        <label>Credit card valid thru date: <span id="data_palette_two_result"><span id="data_palette_two_month" class="card_caption"></span><span class="card_caption">/</span><span id="data_palette_two_year" class="card_caption"></span></span></label>
+        <div id="data_palette_two_wrapper"></div>
+      </div>
+    </div>
+  </body>
+</html>
