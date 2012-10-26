@@ -1,0 +1,22 @@
+<div class="ui-datepalette-margin">
+
+<% for row in @range: %>
+
+  <ul class="ui-datepalette-leaf">
+  
+  <% for elem in row: %>
+
+    <% li_class = "ui-state-default" %>
+    <% li_class += " ui-state-disabled" unless elem.in_bounds  %>
+    <% li_class += " ui-state-active"   if elem.number is @selected  %>
+    <% li_class += " ui-datepalette-leaf-hide" if elem.number is null %>
+    
+    <li class="<%= li_class %>" data-datepalette="<%= elem.number %>"><%= elem.name %></li>
+  
+  <% end %>
+
+  </ul>
+
+<% end %>
+
+</div>

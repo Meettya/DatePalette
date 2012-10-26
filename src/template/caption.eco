@@ -1,0 +1,3 @@
+<div class="ui-datepalette-header ui-widget-header ui-helper-clearfix ui-corner-all">
+  <%= @caption %>
+</div>

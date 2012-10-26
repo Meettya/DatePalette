@@ -1,0 +1,47 @@
+#!/usr/bin/env coffee
+
+stitch    = require 'stitch'
+stylus    = require 'stylus'
+express   = require 'express'
+
+
+argv = process.argv.slice 2
+port = argv[0] or process.env.PORT or 3000
+
+my_package = stitch.createPackage(
+  # Specify the paths you want Stitch to automatically bundle up
+  paths: [
+    __dirname + '/src'
+    __dirname + '/node_modules/dendrite/src'
+    __dirname + '/node_modules/whet.extend/src'
+  ]
+  # Specify your base libraries
+  dependencies: [
+    __dirname + '/helpers/console_stub.js'
+  ]
+)
+
+app = express()
+app.locals.pretty = true
+
+app.configure ->
+  app.set 'views', __dirname + '/develop_suite/views'
+  app.set 'view engine', 'jade'
+
+  # its for stylus pre-compiller
+  app.use stylus.middleware 
+    src     : __dirname + '/develop_suite/public'
+    force   : true
+
+  app.use express.static __dirname + '/develop_suite/public'
+  
+# static page
+app.get '/', (req, res) ->
+  res.render 'index'
+
+# our widget
+app.get '/js/widget.datepalette.js', my_package.createServer()
+
+console.log "Starting server on port: #{port}"
+app.listen port
+
