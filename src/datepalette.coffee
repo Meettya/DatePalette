@@ -6,9 +6,6 @@
     3. append events to 'target' element
 ###
 
-'use strict'
-
-
 $ = jQuery # Reference jQuery
 
 # for node and browser
