@@ -32,7 +32,11 @@
       $("#date_palette_two_result").data('value', this.getResult());
       return null;
     }, null, 'inline');
-    return null;
+    null;
+    return DatePalette.init('#date_palette_three', function() {
+      $("#date_palette_three").val(this.getResult());
+      return null;
+    }, null, 'non-modal');
   });
 
 }).call(this);
@@ -41,8 +45,18 @@
     <link rel="stylesheet" href="css/cupertino/jquery-ui-1.8.16.custom.css">
     <link rel="stylesheet" href="css/reveal.css">
     <link rel="stylesheet" href="css/datepalette.css">
+    <!-- its new styles for non-modal bootstrap-like picker-->
+    <link rel="stylesheet" href="css/datepicker.css">
   </head>
   <body>
+    <div id="example_third" class="ui-widget example-window">
+      <div class="ui-widget-header"><span>Non-modal popup example with one input</span></div>
+      <div class="ui-widget-content">
+        <label>Simple data:
+          <input id="date_palette_three" type="text" name="date_palette_three" readonly>
+        </label>
+      </div>
+    </div>
     <div id="example_first" class="ui-widget example-window">
       <div class="ui-widget-header"><span>Modal popup example with one input</span></div>
       <div class="ui-widget-content">
