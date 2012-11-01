@@ -83,6 +83,16 @@ class Bounds
     @_high_unix_ >= test_momemt_unix >= @_low_unix_
 
   ###
+  Fast checker by unix comparitions
+  This one EXCEPT equality to hight range - [..)
+  I use it in epoch view - long story, yep...
+  ###
+  isContainsExceptHight:(date, format = @_default_format_) ->
+    test_momemt_unix = @_makeTrimmedUnix date, format
+    @_high_unix_ > test_momemt_unix >= @_low_unix_
+
+
+  ###
   Moment maker for incoming test data
   date me be moment object
   ###
