@@ -32,11 +32,11 @@
       $("#date_palette_two_result").data('value', this.getResult());
       return null;
     }, null, 'inline');
-    null;
-    return DatePalette.init('#date_palette_three', function() {
+    DatePalette.init('#date_palette_three', function() {
       $("#date_palette_three").val(this.getResult());
       return null;
-    }, null, 'non-modal');
+    }, null, 'non_modal');
+    return null;
   });
 
 }).call(this);
