@@ -26,7 +26,6 @@ html
 
         DatePalette = require 'datepalette'
 
-        
         DatePalette.init "#date_palette_one", 
           -> $("#date_palette_one").val @getResult(); null,
           'global.debug' : true
@@ -41,13 +40,13 @@ html
           null,
           'inline'
 
-        null
-
-
         DatePalette.init '#date_palette_three',
           -> $("#date_palette_three").val @getResult(); null,
           null,
-          'non-modal'
+          'non_modal'
+
+        null
+
 
     // styles
     link(rel='stylesheet', href = 'css/cupertino/jquery-ui-1.8.16.custom.css')

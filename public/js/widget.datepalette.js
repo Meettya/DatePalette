@@ -278,7 +278,7 @@ and set low or hight if value owerflow it.
   };
 
 }).call(this);
-}, "etc/non-modal": function(exports, require, module) {
+}, "etc/non_modal": function(exports, require, module) {
 /*
   This is non-modal widget
 */
