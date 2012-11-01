@@ -1,3 +1,4 @@
-<div id="<%= @mainDivId %>" class="ui-datepalette ui-widget ui-widget-content ui-helper-clearfix ui-corner-all">
+
+<div id="<%= @mainDivId %>" class="<%= @classes %>">
 
 </div>

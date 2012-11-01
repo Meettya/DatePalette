@@ -23,14 +23,17 @@ Limiter     = require "#{lib_path}controller/limiter"
 
 # this is our avaible views
 Layout      = require "#{lib_path}view/layout"
-Epoch       = require "#{lib_path}view/epoch"
-Years       = require "#{lib_path}view/years"
-Months      = require "#{lib_path}view/months"
-Days        = require "#{lib_path}view/days"
 Caption     = require "#{lib_path}view/caption"
 Modal       = require "#{lib_path}view/modal"
 Inline      = require "#{lib_path}view/inline"
+NonModal    = require "#{lib_path}view/non_modal"
 
+# experemental views
+# our new views - collapsible dual-state view
+MonthsCollapsible = require "#{lib_path}view/months_collapsible"
+YearsCollapsible  = require "#{lib_path}view/years_collapsible"
+DaysCollapsible   = require "#{lib_path}view/days_collapsible"
+EpochCollapsible  = require "#{lib_path}view/epoch_collapsible"
 
 class Wiget 
 
@@ -74,8 +77,9 @@ class Wiget
     widget_style = @_config_.widget.style
 
     whole_widget = switch widget_style.toUpperCase()
-      when "MODAL"   then @_createProductAsModal()
-      when "INLINE"  then @_createProductAsInline()
+      when "MODAL"      then @_createProductAsModal()
+      when "INLINE"     then @_createProductAsInline()
+      when "NON-MODAL"  then @_createProductAsNonModal()
       
       else 
         throw Error """
@@ -101,11 +105,14 @@ class Wiget
     product = new Inline this, @_caption_vm_, @_config_.widget
 
 
+  _createProductAsNonModal : ->
+    product = new NonModal this, @_caption_vm_, @_config_.widget
+
   ###
   Method to create layout
   ###
   createLayout: () ->
-    Layout.createView @_uuid_
+    Layout.createView @_uuid_, @_config_.layout
     
 
   ###
@@ -133,10 +140,10 @@ class Wiget
   createElement : (element_name) ->
     switch element_name.toUpperCase()
       # USE UPPERCASED NAMES !!!!
-      when "EPOCH"    then @_createEpoch()
-      when "YEARS"    then @_createYears()
-      when "MONTHS"   then @_createMonths()
-      when "DAYS"     then @_createDays()
+      when "EPOCH"  then @_createEpochCollapsible()
+      when "MONTHS" then @_createMonthsCollapsible()
+      when "YEARS"  then @_createYearsCollapsible()
+      when "DAYS"   then @_createDaysCollapsible()
       when "CAPTION"  then @_createCaption()
 
       else 
@@ -174,22 +181,21 @@ class Wiget
 
     layout
 
-
-  _createEpoch : ->
-    element = new Epoch @_year_vm_, @getBounds()
+  _createEpochCollapsible: ->
+    element = new EpochCollapsible @_year_vm_, @getBounds(), @_config_.years.epoch
     element.createView()
 
-  _createYears : ->
-    element = new Years @_year_vm_, @getBounds(), @_config_.years.leaf
+  _createDaysCollapsible: ->
+    element = new DaysCollapsible @_day_vm_, @_month_vm_, @getBounds(), @_config_.days
     element.createView()
 
-  _createMonths : ->
-    element = new Months @_month_vm_, @getBounds(), @_config_.months
-    element.createView() 
+  _createYearsCollapsible: ->
+    element = new YearsCollapsible @_year_vm_, @getBounds(), @_config_.years.leaf
+    element.createView()
 
-  _createDays : ->
-    element = new Days @_day_vm_, @_month_vm_, @getBounds(), @_config_.days
-    element.createView() 
+  _createMonthsCollapsible: ->
+    element = new MonthsCollapsible @_month_vm_, @getBounds(), @_config_.months
+    element.createView()
 
   _createCaption : ->
     element = new Caption @_caption_vm_, @getBounds(), @_config_.caption

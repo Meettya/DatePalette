@@ -26,6 +26,7 @@ html
 
         DatePalette = require 'datepalette'
 
+        
         DatePalette.init "#date_palette_one", 
           -> $("#date_palette_one").val @getResult(); null,
           'global.debug' : true
@@ -43,13 +44,29 @@ html
         null
 
 
+        DatePalette.init '#date_palette_three',
+          -> $("#date_palette_three").val @getResult(); null,
+          null,
+          'non-modal'
+
     // styles
     link(rel='stylesheet', href = 'css/cupertino/jquery-ui-1.8.16.custom.css')
     link(rel='stylesheet', href = 'css/reveal.css')
     link(rel='stylesheet', href = 'css/datepalette.css')
+    // its new styles for non-modal bootstrap-like picker
+    link(rel='stylesheet', href = 'css/datepicker.css')
 
 
   body
+
+    #example_third(class='ui-widget example-window')
+      div(class='ui-widget-header')
+        span Non-modal popup example with one input
+      div(class='ui-widget-content')
+        label
+          | Simple data:
+          input#date_palette_three(type='text', name='date_palette_three', readonly)
+
 
     #example_first(class='ui-widget example-window')
       div(class='ui-widget-header')
@@ -70,4 +87,3 @@ html
             span(class='card_caption') /
             span#date_palette_two_year(class='card_caption')
         #date_palette_two_wrapper
-

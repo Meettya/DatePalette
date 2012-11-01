@@ -17,11 +17,18 @@ module.exports =
       fill_on_init  : yes
       format        : 'YYYY-MM-DD'
 
+  layout :
+    style : 'ui' # this is stylers for UI-like layout
+
   years :
     range : [ 2011, 2021 ]
     leaf :
       format     : 'YYYY'
       row_length : 22 # maximum of chars in one row
+    epoch : 
+      row_length : 26 # maximum of chars in one row
+      format  : 'YYYY'
+
 
   months : 
     format     : 'MM'

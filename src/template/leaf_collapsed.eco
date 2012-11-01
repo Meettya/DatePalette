@@ -1,0 +1,14 @@
+<div class="ui-datepalette-margin">
+
+  <ul class="ui-datepalette-leaf">
+  
+
+    <% li_class = "ui-state-default ui-state-active" %>
+    
+    <li class="<%= li_class %>" data-datepalette="<%= @value.number %>"><%= @value.name %></li>
+  
+  
+
+  </ul>
+
+</div>

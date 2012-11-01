@@ -22,7 +22,9 @@ instanceProperties =
 
     for date_obj in range
       name_length = date_obj.name.length
-      date_obj.in_bounds = @_inBoundsChecker date_obj.number
+      # do not overwrite in_bounds if it already filled
+      date_obj.in_bounds ?= @_inBoundsChecker date_obj.number
+      
       if ( char_counter + name_length ) >= max_char_in_row
         compiled_ranges.push accumalator
         accumalator = [date_obj]
@@ -55,7 +57,7 @@ instanceProperties =
     if diff
       addon = for step in [0...diff]
           number : null
-          name   : formatter '00'
+          name   : formatter '0000'
       ranges.splice last_idx, 1, last_line.concat addon
 
     ranges

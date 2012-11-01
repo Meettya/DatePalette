@@ -13,26 +13,40 @@ lib_path = if GLOBAL? then '../' else ''
 MixinSupported  = require "#{lib_path}lib/mixin_supported"
 # our mixins
 GridableV       = require "#{lib_path}mixin/gridable_v"
+CollapsibleV    = require "#{lib_path}mixin/collapsible_v"
+FormattableV    = require "#{lib_path}mixin/formattable_view"
+
 
 # and template
 template         = require "#{lib_path}template/leaf"
+template_collapsed  = require "#{lib_path}template/leaf_collapsed"
 
 module.exports = class Days extends MixinSupported
 
   @include GridableV
+  @include CollapsibleV
+  @include FormattableV
 
   constructor: (@_view_model_, @_month_vm_, bounds_obj, @_config_ = {})  ->
     # subscribe to changes
-    observer = @_view_model_.getObserverObject()
+    @_observer_ = @_view_model_.getObserverObject()
     bus_name = @_view_model_.getNotificationBusName()
-    observer.subscribe bus_name, @_updateData, this
+    @_observer_.subscribe bus_name, @_updateData, this
 
-    @_formatter_      = @_makeFormatter @_config_.format
+    @_who_i_am_         = 'DAYS'
+
+    # realize collapsible behavior
+    @_element_collapsed_ or= @_config_.is_collapsed
+
+    if @_config_.is_collapsible
+      @subscribeToCollapsibleEvent @_collapseElement
+
+    @_formatter_      = @getFormatter 'days', @_config_.format
 
     @_bounds_ = bounds_obj.transformToBoundsFor 'days'
 
     # our magic weapon
-    @_morph_ = Metamorph @_renderContent()
+    @_morph_ = Metamorph @_contentBuilder()
 
   ###
   To create root UL node and append to it Methamorph object
@@ -40,6 +54,7 @@ module.exports = class Days extends MixinSupported
   createView : ->
     $('<div>')
       .on("click", "li", @_handler)
+      .on("click", "li", => @_collapseOthers() ) # its dirty hack to remember 'this'
       .append @_morph_.outerHTML()
 
   ###
@@ -59,14 +74,6 @@ module.exports = class Days extends MixinSupported
       selected  : @_view_model_.getDay()
 
   ###
-  Formatter for days
-  ###
-  _makeFormatter : (format) ->
-    switch format.toUpperCase()
-      when "D"  then (day) -> "#{day}"
-      when "DD" then (day) -> "0#{day}".slice -2
-
-  ###
   This method for fast check - is month in this year is in bounds or not
   ###
   _inBoundsChecker : (day_as_integer) ->
@@ -79,8 +86,26 @@ module.exports = class Days extends MixinSupported
   ###
   _updateData : ->
     # all black magic here
-    # console.log 'day re-render'
-    @_morph_.html @_renderContent()
+    # console.log 'month re-rendered'
+    @_morph_.html @_contentBuilder()
+
+  ###
+  Content builder selector
+  ###
+  _contentBuilder : ->
+    if @_isCollapsed()
+      @_renderCollapsedContent()
+    else
+      @_renderContent()
+
+  ###
+  This method for rendering collapsed content
+  ###
+  _renderCollapsedContent : ->
+    template_collapsed
+      value : 
+        name : @_view_model_.getDay @_config_.format_collapsed or @_config_.format
+        number : @_view_model_.getDay()
 
   ###
   This is our 'onclick' event, its simply
