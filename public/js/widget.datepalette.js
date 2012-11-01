@@ -136,8 +136,6 @@ and set low or hight if value owerflow it.
 
 
 (function() {
-  'use strict';
-
   var $, ConfigBuilder, DatePalette, Widget, lib_path;
 
   $ = jQuery;
@@ -192,6 +190,9 @@ and set low or hight if value owerflow it.
         format: 'DD MMMM YYYY'
       }
     },
+    layout: {
+      style: 'ui'
+    },
     caption: {
       format: 'DD MMMM YYYY, dddd'
     },
@@ -200,6 +201,10 @@ and set low or hight if value owerflow it.
       leaf: {
         format: 'YY',
         row_length: 22
+      },
+      epoch: {
+        row_length: 26,
+        format: 'YYYY'
       }
     },
     months: {
@@ -241,11 +246,18 @@ and set low or hight if value owerflow it.
         format: 'YYYY-MM-DD'
       }
     },
+    layout: {
+      style: 'ui'
+    },
     years: {
       range: [2011, 2021],
       leaf: {
         format: 'YYYY',
         row_length: 22
+      },
+      epoch: {
+        row_length: 26,
+        format: 'YYYY'
       }
     },
     months: {
@@ -262,6 +274,73 @@ and set low or hight if value owerflow it.
     },
     limiter: {
       scale: 'months'
+    }
+  };
+
+}).call(this);
+}, "etc/non-modal": function(exports, require, module) {
+/*
+  This is non-modal widget
+*/
+
+
+(function() {
+
+  module.exports = {
+    components: ['Caption', 'Epoch', 'Years', 'Months', 'Days'],
+    widget: {
+      style: 'non-modal',
+      target: {
+        fill_on_init: true,
+        format: 'DD MMMM YYYY'
+      }
+    },
+    layout: {
+      style: 'bootstrap'
+    },
+    caption: {
+      format: 'DD MMMM YYYY, dddd'
+    },
+    years: {
+      range: [1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020, 2030],
+      leaf: {
+        format: 'YYYY',
+        format_collapsed: 'YYYY',
+        is_collapsible: true,
+        is_collapsed: true,
+        row_length: 22
+      },
+      epoch: {
+        row_length: 26,
+        expand_on_call_by: 'Years',
+        is_collapsible: true,
+        is_collapsed: true,
+        collaps_style: 'hide',
+        may_collaps_other: false,
+        format: 'YYYY'
+      }
+    },
+    months: {
+      format: 'MMMM',
+      is_collapsible: true,
+      is_collapsed: true,
+      row_length: 26
+    },
+    days: {
+      format: 'DD',
+      is_collapsible: true,
+      row_length: 16
+    },
+    global: {
+      locale: 'ru',
+      debug: false
+    },
+    bounds: {
+      low: '1950-02-15',
+      high: '2019-12-30'
+    },
+    limiter: {
+      check_direct_input: true
     }
   };
 
@@ -458,6 +537,104 @@ Need to control access and have nice named functions
   module.exports = Stack;
 
 }).call(this);
+}, "mixin/collapsible_v": function(exports, require, module) {
+/*
+This is Collapsible mixin, addon to observerable
+*/
+
+
+(function() {
+  var instanceProperties,
+    __slice = [].slice;
+
+  instanceProperties = {
+    /*
+      Method to collapse all other subscribers
+    */
+
+    _collapseOthers: function() {
+      this.broadcastCollapse(this._who_i_am_);
+      return this._expandSelf();
+    },
+    /*
+      Method to expand self element
+    */
+
+    _expandSelf: function() {
+      if (this._isCollapsed()) {
+        this._setCollapsedOff();
+        this._updateData();
+      }
+      return null;
+    },
+    /*
+      Method to collapse element
+    */
+
+    _collapseElement: function(bus_name, who_init) {
+      if (!(this._isCollapsed() || this._who_i_am_ === who_init)) {
+        this._setCollapsedOn();
+        this._updateData();
+      }
+      return null;
+    },
+    /*
+      Just getter to collapse property
+    */
+
+    _isCollapsed: function() {
+      return !!this._element_collapsed_;
+    },
+    /*
+      And its just setter
+    */
+
+    _setCollapsedOn: function() {
+      return this._element_collapsed_ = true;
+    },
+    /*
+      And its just setter
+    */
+
+    _setCollapsedOff: function() {
+      return this._element_collapsed_ = false;
+    },
+    /*
+      This is Collapsible subscriber
+      its need on_event_cb becose some elements have it (cb) different
+    */
+
+    subscribeToCollapsibleEvent: function(on_event_cb) {
+      var collapse_bus_name;
+      collapse_bus_name = this.getCollapsibleBusName();
+      this._observer_.subscribe(collapse_bus_name, on_event_cb, this);
+      return null;
+    },
+    /*
+      This method say Collapsible bus name
+    */
+
+    getCollapsibleBusName: function() {
+      return 'COLLAPSE';
+    },
+    /*
+      Broadcast collapse - say all subscribers to collapse himself
+    */
+
+    broadcastCollapse: function() {
+      var args, offender;
+      offender = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      return this._observerPublisher(this.getCollapsibleBusName(), offender, args);
+    },
+    _observerPublisher: function(topics, offender, args) {
+      this._observer_.publishAsync.apply(this._observer_, [topics, offender].concat(args));
+      return null;
+    }
+  };
+
+  module.exports = instanceProperties;
+
+}).call(this);
 }, "mixin/flattingable_vm": function(exports, require, module) {
 /*
 This mixin add generic flatting command
@@ -496,6 +673,63 @@ This mixin add generic flatting command
           return time_obj.year();
         default:
           return time_obj.format(format);
+      }
+    }
+  };
+
+  module.exports = instanceProperties;
+
+}).call(this);
+}, "mixin/formattable_view": function(exports, require, module) {
+/*
+This mixin add fast formatter, used by Views
+*/
+
+
+(function() {
+  var instanceProperties;
+
+  instanceProperties = {
+    getFormatter: function(formatter_type, format) {
+      switch (formatter_type.toUpperCase()) {
+        case "YEARS":
+          return this._createYearsFormatter(format);
+        case "DAYS":
+          return this._createDaysFormatter(format);
+        default:
+          throw Error("|" + this._who_i_am_ + ".getFormatter| dont know formatter_type " + formatter_type);
+      }
+    },
+    /*
+      Formatter for years
+    */
+
+    _createYearsFormatter: function(format) {
+      switch (format.toUpperCase()) {
+        case "YY":
+          return function(year) {
+            return ("" + year).slice(-2);
+          };
+        case "YYYY":
+          return function(year) {
+            return "" + year;
+          };
+      }
+    },
+    /*
+      Formatter for days
+    */
+
+    _createDaysFormatter: function(format) {
+      switch (format.toUpperCase()) {
+        case "D":
+          return function(day) {
+            return "" + day;
+          };
+        case "DD":
+          return function(day) {
+            return ("0" + day).slice(-2);
+          };
       }
     }
   };
@@ -598,14 +832,16 @@ on some part, limiting reason - chars number in 'name' properties
     */
 
     _compileSplittedRange: function(range, max_char_in_row) {
-      var accumalator, char_counter, compiled_ranges, date_obj, name_length, _i, _len;
+      var accumalator, char_counter, compiled_ranges, date_obj, name_length, _i, _len, _ref;
       char_counter = 0;
       accumalator = [];
       compiled_ranges = [];
       for (_i = 0, _len = range.length; _i < _len; _i++) {
         date_obj = range[_i];
         name_length = date_obj.name.length;
-        date_obj.in_bounds = this._inBoundsChecker(date_obj.number);
+        if ((_ref = date_obj.in_bounds) == null) {
+          date_obj.in_bounds = this._inBoundsChecker(date_obj.number);
+        }
         if ((char_counter + name_length) >= max_char_in_row) {
           compiled_ranges.push(accumalator);
           accumalator = [date_obj];
@@ -651,7 +887,7 @@ on some part, limiting reason - chars number in 'name' properties
           for (step = _i = 0; 0 <= diff ? _i < diff : _i > diff; step = 0 <= diff ? ++_i : --_i) {
             _results.push({
               number: null,
-              name: formatter('00')
+              name: formatter('0000')
             });
           }
           return _results;
@@ -934,6 +1170,22 @@ This is Bounds class - to hold and work with range of data
       }
       test_momemt_unix = this._makeTrimmedUnix(date, format);
       return (this._high_unix_ >= test_momemt_unix && test_momemt_unix >= this._low_unix_);
+    };
+
+    /*
+      Fast checker by unix comparitions
+      This one EXCEPT equality to hight range - [..)
+      I use it in epoch view - long story, yep...
+    */
+
+
+    Bounds.prototype.isContainsExceptHight = function(date, format) {
+      var test_momemt_unix;
+      if (format == null) {
+        format = this._default_format_;
+      }
+      test_momemt_unix = this._makeTrimmedUnix(date, format);
+      return (this._high_unix_ > test_momemt_unix && test_momemt_unix >= this._low_unix_);
     };
 
     /*
@@ -1344,7 +1596,7 @@ This is Widget model - main container, builder, and so on
 
 
 (function() {
-  var Caption, Days, Epoch, Inline, Layout, Limiter, Modal, Months, Registry, Wiget, Years, lib_path, _, _ref;
+  var Caption, DaysCollapsible, EpochCollapsible, Inline, Layout, Limiter, Modal, MonthsCollapsible, NonModal, Registry, Wiget, YearsCollapsible, lib_path, _, _ref;
 
   _ = (_ref = this._) != null ? _ref : require('underscore');
 
@@ -1356,19 +1608,21 @@ This is Widget model - main container, builder, and so on
 
   Layout = require("" + lib_path + "view/layout");
 
-  Epoch = require("" + lib_path + "view/epoch");
-
-  Years = require("" + lib_path + "view/years");
-
-  Months = require("" + lib_path + "view/months");
-
-  Days = require("" + lib_path + "view/days");
-
   Caption = require("" + lib_path + "view/caption");
 
   Modal = require("" + lib_path + "view/modal");
 
   Inline = require("" + lib_path + "view/inline");
+
+  NonModal = require("" + lib_path + "view/non_modal");
+
+  MonthsCollapsible = require("" + lib_path + "view/months_collapsible");
+
+  YearsCollapsible = require("" + lib_path + "view/years_collapsible");
+
+  DaysCollapsible = require("" + lib_path + "view/days_collapsible");
+
+  EpochCollapsible = require("" + lib_path + "view/epoch_collapsible");
 
   Wiget = (function() {
 
@@ -1418,6 +1672,8 @@ This is Widget model - main container, builder, and so on
             return this._createProductAsModal();
           case "INLINE":
             return this._createProductAsInline();
+          case "NON-MODAL":
+            return this._createProductAsNonModal();
           default:
             throw Error("|Product| - can`t create presentation style - unknown \n|widget_style| = |" + widget_style + "|");
         }
@@ -1446,13 +1702,18 @@ This is Widget model - main container, builder, and so on
       return product = new Inline(this, this._caption_vm_, this._config_.widget);
     };
 
+    Wiget.prototype._createProductAsNonModal = function() {
+      var product;
+      return product = new NonModal(this, this._caption_vm_, this._config_.widget);
+    };
+
     /*
       Method to create layout
     */
 
 
     Wiget.prototype.createLayout = function() {
-      return Layout.createView(this._uuid_);
+      return Layout.createView(this._uuid_, this._config_.layout);
     };
 
     /*
@@ -1490,13 +1751,13 @@ This is Widget model - main container, builder, and so on
     Wiget.prototype.createElement = function(element_name) {
       switch (element_name.toUpperCase()) {
         case "EPOCH":
-          return this._createEpoch();
-        case "YEARS":
-          return this._createYears();
+          return this._createEpochCollapsible();
         case "MONTHS":
-          return this._createMonths();
+          return this._createMonthsCollapsible();
+        case "YEARS":
+          return this._createYearsCollapsible();
         case "DAYS":
-          return this._createDays();
+          return this._createDaysCollapsible();
         case "CAPTION":
           return this._createCaption();
         default:
@@ -1542,27 +1803,27 @@ This is Widget model - main container, builder, and so on
       return layout;
     };
 
-    Wiget.prototype._createEpoch = function() {
+    Wiget.prototype._createEpochCollapsible = function() {
       var element;
-      element = new Epoch(this._year_vm_, this.getBounds());
+      element = new EpochCollapsible(this._year_vm_, this.getBounds(), this._config_.years.epoch);
       return element.createView();
     };
 
-    Wiget.prototype._createYears = function() {
+    Wiget.prototype._createDaysCollapsible = function() {
       var element;
-      element = new Years(this._year_vm_, this.getBounds(), this._config_.years.leaf);
+      element = new DaysCollapsible(this._day_vm_, this._month_vm_, this.getBounds(), this._config_.days);
       return element.createView();
     };
 
-    Wiget.prototype._createMonths = function() {
+    Wiget.prototype._createYearsCollapsible = function() {
       var element;
-      element = new Months(this._month_vm_, this.getBounds(), this._config_.months);
+      element = new YearsCollapsible(this._year_vm_, this.getBounds(), this._config_.years.leaf);
       return element.createView();
     };
 
-    Wiget.prototype._createDays = function() {
+    Wiget.prototype._createMonthsCollapsible = function() {
       var element;
-      element = new Days(this._day_vm_, this._month_vm_, this.getBounds(), this._config_.days);
+      element = new MonthsCollapsible(this._month_vm_, this.getBounds(), this._config_.months);
       return element.createView();
     };
 
@@ -1669,33 +1930,42 @@ This is Widget model - main container, builder, and so on
   }
   (function() {
     (function() {
-      var elem, li_class, _i, _len, _ref;
+      var elem, li_class, row, _i, _j, _len, _len1, _ref;
     
-      __out.push('<ul class="ui-datepalette-root ui-datepalette-margin">\n  ');
+      __out.push('<div class="ui-datepalette-margin">\n\n');
     
-      _ref = this.ranges;
+      _ref = this.range;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        elem = _ref[_i];
-        __out.push('\n    ');
-        li_class = "ui-state-default ui-corner-all";
-        __out.push('\n    ');
-        if (!elem.in_bounds) {
-          li_class += " ui-state-disabled";
+        row = _ref[_i];
+        __out.push('\n\n  <ul class="ui-datepalette-root">\n  \n  ');
+        for (_j = 0, _len1 = row.length; _j < _len1; _j++) {
+          elem = row[_j];
+          __out.push('\n\n    ');
+          li_class = "ui-state-default ui-corner-all";
+          __out.push('\n    ');
+          if (!elem.in_bounds) {
+            li_class += " ui-state-disabled";
+          }
+          __out.push('\n    ');
+          if (elem.number === this.selected) {
+            li_class += " ui-state-highlight";
+          }
+          __out.push('\n    ');
+          if (elem.number === null) {
+            li_class += " ui-datepalette-leaf-hide";
+          }
+          __out.push('\n    \n    <li class="');
+          __out.push(__sanitize(li_class));
+          __out.push('" data-datepalette="');
+          __out.push(__sanitize(elem.number));
+          __out.push('">');
+          __out.push(__sanitize(elem.name));
+          __out.push('</li>\n  \n  ');
         }
-        __out.push('\n    ');
-        if (elem.number === this.selected) {
-          li_class += " ui-state-highlight";
-        }
-        __out.push('\n    <li class="');
-        __out.push(__sanitize(li_class));
-        __out.push('" data-datepalette="');
-        __out.push(__sanitize(elem.number));
-        __out.push('">');
-        __out.push(__sanitize(elem.name));
-        __out.push('</li>\n  ');
+        __out.push('\n\n  </ul>\n\n');
       }
     
-      __out.push('\n</ul>\n');
+      __out.push('\n\n</div>\n');
     
     }).call(this);
     
@@ -1742,11 +2012,15 @@ This is Widget model - main container, builder, and so on
   (function() {
     (function() {
     
-      __out.push('<div id="');
+      __out.push('\n<div id="');
     
       __out.push(__sanitize(this.mainDivId));
     
-      __out.push('" class="ui-datepalette ui-widget ui-widget-content ui-helper-clearfix ui-corner-all">\n\n</div>');
+      __out.push('" class="');
+    
+      __out.push(__sanitize(this.classes));
+    
+      __out.push('">\n\n</div>');
     
     }).call(this);
     
@@ -1834,6 +2108,70 @@ This is Widget model - main container, builder, and so on
   }).call(__obj);
   __obj.safe = __objSafe, __obj.escape = __escape;
   return __out.join('');
+}}, "template/leaf_collapsed": function(exports, require, module) {module.exports = function(__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var li_class;
+    
+      __out.push('<div class="ui-datepalette-margin">\n\n  <ul class="ui-datepalette-leaf">\n  \n\n    ');
+    
+      li_class = "ui-state-default ui-state-active";
+    
+      __out.push('\n    \n    <li class="');
+    
+      __out.push(__sanitize(li_class));
+    
+      __out.push('" data-datepalette="');
+    
+      __out.push(__sanitize(this.value.number));
+    
+      __out.push('">');
+    
+      __out.push(__sanitize(this.value.name));
+    
+      __out.push('</li>\n  \n  \n\n  </ul>\n\n</div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
 }}, "view/caption": function(exports, require, module) {
 /*
 This View module itself for epoch selector ([1930][1960][1980]) - this like
@@ -1905,14 +2243,14 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
   })();
 
 }).call(this);
-}, "view/days": function(exports, require, module) {
+}, "view/days_collapsible": function(exports, require, module) {
 /*
 This View module itself for Days selector (1,2,3,4) - this like
 */
 
 
 (function() {
-  var $, Days, GridableV, MixinSupported, lib_path, template,
+  var $, CollapsibleV, Days, FormattableV, GridableV, MixinSupported, lib_path, template, template_collapsed,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1929,7 +2267,13 @@ This View module itself for Days selector (1,2,3,4) - this like
 
   GridableV = require("" + lib_path + "mixin/gridable_v");
 
+  CollapsibleV = require("" + lib_path + "mixin/collapsible_v");
+
+  FormattableV = require("" + lib_path + "mixin/formattable_view");
+
   template = require("" + lib_path + "template/leaf");
+
+  template_collapsed = require("" + lib_path + "template/leaf_collapsed");
 
   module.exports = Days = (function(_super) {
 
@@ -1937,19 +2281,28 @@ This View module itself for Days selector (1,2,3,4) - this like
 
     Days.include(GridableV);
 
+    Days.include(CollapsibleV);
+
+    Days.include(FormattableV);
+
     function Days(_view_model_, _month_vm_, bounds_obj, _config_) {
-      var bus_name, observer;
+      var bus_name;
       this._view_model_ = _view_model_;
       this._month_vm_ = _month_vm_;
       this._config_ = _config_ != null ? _config_ : {};
       this._handler = __bind(this._handler, this);
 
-      observer = this._view_model_.getObserverObject();
+      this._observer_ = this._view_model_.getObserverObject();
       bus_name = this._view_model_.getNotificationBusName();
-      observer.subscribe(bus_name, this._updateData, this);
-      this._formatter_ = this._makeFormatter(this._config_.format);
+      this._observer_.subscribe(bus_name, this._updateData, this);
+      this._who_i_am_ = 'DAYS';
+      this._element_collapsed_ || (this._element_collapsed_ = this._config_.is_collapsed);
+      if (this._config_.is_collapsible) {
+        this.subscribeToCollapsibleEvent(this._collapseElement);
+      }
+      this._formatter_ = this.getFormatter('days', this._config_.format);
       this._bounds_ = bounds_obj.transformToBoundsFor('days');
-      this._morph_ = Metamorph(this._renderContent());
+      this._morph_ = Metamorph(this._contentBuilder());
     }
 
     /*
@@ -1958,7 +2311,10 @@ This View module itself for Days selector (1,2,3,4) - this like
 
 
     Days.prototype.createView = function() {
-      return $('<div>').on("click", "li", this._handler).append(this._morph_.outerHTML());
+      var _this = this;
+      return $('<div>').on("click", "li", this._handler).on("click", "li", function() {
+        return _this._collapseOthers();
+      }).append(this._morph_.outerHTML());
     };
 
     /*
@@ -1983,24 +2339,6 @@ This View module itself for Days selector (1,2,3,4) - this like
     };
 
     /*
-      Formatter for days
-    */
-
-
-    Days.prototype._makeFormatter = function(format) {
-      switch (format.toUpperCase()) {
-        case "D":
-          return function(day) {
-            return "" + day;
-          };
-        case "DD":
-          return function(day) {
-            return ("0" + day).slice(-2);
-          };
-      }
-    };
-
-    /*
       This method for fast check - is month in this year is in bounds or not
     */
 
@@ -2018,7 +2356,34 @@ This View module itself for Days selector (1,2,3,4) - this like
 
 
     Days.prototype._updateData = function() {
-      return this._morph_.html(this._renderContent());
+      return this._morph_.html(this._contentBuilder());
+    };
+
+    /*
+      Content builder selector
+    */
+
+
+    Days.prototype._contentBuilder = function() {
+      if (this._isCollapsed()) {
+        return this._renderCollapsedContent();
+      } else {
+        return this._renderContent();
+      }
+    };
+
+    /*
+      This method for rendering collapsed content
+    */
+
+
+    Days.prototype._renderCollapsedContent = function() {
+      return template_collapsed({
+        value: {
+          name: this._view_model_.getDay(this._config_.format_collapsed || this._config_.format),
+          number: this._view_model_.getDay()
+        }
+      });
     };
 
     /*
@@ -2047,15 +2412,25 @@ This View module itself for Days selector (1,2,3,4) - this like
   })(MixinSupported);
 
 }).call(this);
-}, "view/epoch": function(exports, require, module) {
+}, "view/epoch_collapsible": function(exports, require, module) {
 /*
 This View module itself for epoch selector ([1930][1960][1980]) - this like
 */
 
 
+/*
+ВАЖНО!!!
+Это коллапсирующий вид для выбора десятилетия, но он отличается от всех
+остальных, т.к. работает в связке с годами и имеет дополнительную логику
+на эту тему.
+*/
+
+
 (function() {
-  var $, Bounds, Epoch, lib_path, template,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var $, Bounds, CollapsibleV, Epoch, FormattableV, GridableV, MixinSupported, lib_path, template, template_collapsed,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (!this.Metamorph) {
     throw Error("sorry, resolve Methamorph dependency first!");
@@ -2078,21 +2453,46 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
 
   Bounds = require("" + lib_path + "model/bounds");
 
+  MixinSupported = require("" + lib_path + "lib/mixin_supported");
+
+  GridableV = require("" + lib_path + "mixin/gridable_v");
+
+  CollapsibleV = require("" + lib_path + "mixin/collapsible_v");
+
+  FormattableV = require("" + lib_path + "mixin/formattable_view");
+
   template = require("" + lib_path + "template/epoch");
 
-  module.exports = Epoch = (function() {
+  template_collapsed = require("" + lib_path + "template/leaf_collapsed");
+
+  module.exports = Epoch = (function(_super) {
+
+    __extends(Epoch, _super);
+
+    Epoch.include(GridableV);
+
+    Epoch.include(CollapsibleV);
+
+    Epoch.include(FormattableV);
 
     function Epoch(_year_vm_, bounds_obj, _config_) {
-      var bus_name, observer;
+      var bus_name;
       this._year_vm_ = _year_vm_;
       this._config_ = _config_ != null ? _config_ : {};
       this._handler = __bind(this._handler, this);
 
-      observer = this._year_vm_.getObserverObject();
+      this._observer_ = this._year_vm_.getObserverObject();
       bus_name = this._year_vm_.getNotificationBusName();
-      observer.subscribe(bus_name, this._updateData, this);
+      this._observer_.subscribe(bus_name, this._updateData, this);
+      this._who_i_am_ = 'EPOCH';
+      this._element_collaps_style_ = this._config_.collaps_style || 'show';
+      this._element_collapsed_ || (this._element_collapsed_ = this._config_.is_collapsed);
+      if (this._config_.is_collapsible) {
+        this.subscribeToCollapsibleEvent(this._collapseElementWrapper);
+      }
+      this._formatter_ = this.getFormatter('years', this._config_.format);
       this._bounds_ = bounds_obj.transformToBoundsFor('years');
-      this._morph_ = Metamorph(this._renderContent());
+      this._morph_ = Metamorph(this._contentBuilder());
     }
 
     /*
@@ -2101,7 +2501,19 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
 
 
     Epoch.prototype.createView = function() {
-      return $('<div>').on("click", "li", this._handler).append(this._morph_.outerHTML());
+      var element,
+        _this = this;
+      element = $('<div>').on("click", "li", this._handler).append(this._morph_.outerHTML());
+      if (this._config_.may_collaps_other) {
+        element.on("click", "li", function() {
+          return _this._collapseOthers();
+        });
+      } else {
+        element.on("click", "li", function() {
+          return _this._expandSelf();
+        });
+      }
+      return element;
     };
 
     /*
@@ -2110,14 +2522,47 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
 
 
     /*
+      This view is not ordinary and must have some additional logic on collaps events
+    */
+
+
+    Epoch.prototype._collapseElementWrapper = function(bus_name, who_init) {
+      var frend;
+      frend = this._config_.expand_on_call_by;
+      if (who_init === frend.toUpperCase()) {
+        this._expandSelf();
+      } else {
+        this._collapseElement(bus_name, who_init);
+      }
+      return null;
+    };
+
+    /*
       Create content for Morph object
     */
 
 
     Epoch.prototype._renderContent = function() {
+      var compiled_ranges, years_sequence;
+      years_sequence = this._rangeConcentrator(this._year_vm_.getAvaibleEraPoints(), this._formatter_);
+      compiled_ranges = this._compileSplittedRange(years_sequence, this._config_.row_length);
       return template({
-        ranges: this._rangeConcentrator(this._year_vm_.getAvaibleEraPoints()),
+        range: this._intervalAmplifier(compiled_ranges, this._formatter_),
         selected: this._year_vm_.getEraStart()
+      });
+    };
+
+    /*
+      This method for rendering collapsed content
+    */
+
+
+    Epoch.prototype._renderCollapsedContent = function() {
+      return template_collapsed({
+        value: {
+          name: this._year_vm_.getEraStart(this._config_.format_collapsed || this._config_.format),
+          number: this._year_vm_.getEraStart()
+        }
       });
     };
 
@@ -2126,7 +2571,7 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
     */
 
 
-    Epoch.prototype._rangeConcentrator = function(range) {
+    Epoch.prototype._rangeConcentrator = function(range, formater) {
       var element, idx, _i, _len, _results;
       _results = [];
       for (idx = _i = 0, _len = range.length; _i < _len; idx = ++_i) {
@@ -2134,7 +2579,7 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
         if (range[idx + 1]) {
           _results.push({
             number: element,
-            name: element,
+            name: formater(element),
             in_bounds: this._complexInBoundsChecker(element, range[idx + 1])
           });
         }
@@ -2163,7 +2608,7 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
     Epoch.prototype._reverseInBounceChecker = function(start, end) {
       var test_bounds;
       test_bounds = new Bounds(start, end).transformToBoundsFor('years');
-      return test_bounds.isContains(this._bounds_.getLower().format('YYYY'));
+      return test_bounds.isContainsExceptHight(this._bounds_.getLower().format('YYYY'));
     };
 
     /*
@@ -2172,7 +2617,24 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
 
 
     Epoch.prototype._updateData = function() {
-      return this._morph_.html(this._renderContent());
+      return this._morph_.html(this._contentBuilder());
+    };
+
+    /*
+      Content builder selector
+    */
+
+
+    Epoch.prototype._contentBuilder = function() {
+      if (this._isCollapsed()) {
+        if (this._element_collaps_style_.toUpperCase() === 'HIDE') {
+          return '';
+        } else {
+          return this._renderCollapsedContent();
+        }
+      } else {
+        return this._renderContent();
+      }
     };
 
     /*
@@ -2198,7 +2660,7 @@ This View module itself for epoch selector ([1930][1960][1980]) - this like
 
     return Epoch;
 
-  })();
+  })(MixinSupported);
 
 }).call(this);
 }, "view/inline": function(exports, require, module) {
@@ -2298,10 +2760,12 @@ This View for widget layout
 
     }
 
-    Layout.createView = function(uuid) {
-      var element;
+    Layout.createView = function(uuid, config) {
+      var element, layout_style;
+      layout_style = config.style || 'ui';
       element = template({
-        mainDivId: uuid
+        mainDivId: uuid,
+        classes: this.prototype._buildLayoutStyle(layout_style)
       });
       return $(element).on("hover", "li", this.prototype._handler);
     };
@@ -2322,6 +2786,20 @@ This View for widget layout
           break;
         case 'mouseleave':
           return target.removeClass("ui-state-hover");
+      }
+    };
+
+    /*
+      Layout styler
+    */
+
+
+    Layout.prototype._buildLayoutStyle = function(style) {
+      switch (style) {
+        case 'ui':
+          return "ui-datepalette ui-widget ui-widget-content ui-helper-clearfix ui-corner-all";
+        case 'bootstrap':
+          return "ui-datepalette";
       }
     };
 
@@ -2409,14 +2887,25 @@ here we are take layout with pre-filled components and add it to page
   })();
 
 }).call(this);
-}, "view/months": function(exports, require, module) {
+}, "view/months_collapsible": function(exports, require, module) {
 /*
-This View module itself for months selector ([Jan][Feb][Mar]) - this like
+Это прокачанный вариант вию месяца - 
+  он может сворачиваться в единственное значаение
+  и разварачиваться в список месяцев
+
+  Разворот происходит по событию.
+  Думаю что будет оптимально к обсерверу прикрутить еще одну шину
+  и посылать по ней 2 типа сообщений
+  'all.collapse' - это бродкастовое сообщение, 
+    оно кидается в общую кучу и обрабатывается всеми коллапсирующими модулями
+
+  '#{why}.expand' - это сообщение для конкретного получателя,
+    оно семафорит адресату что нужно развернуться до полного размера.
 */
 
 
 (function() {
-  var $, GridableV, MixinSupported, Months, lib_path, template,
+  var $, CollapsibleV, GridableV, MixinSupported, Months, lib_path, template, template_collapsed,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2433,7 +2922,11 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
 
   GridableV = require("" + lib_path + "mixin/gridable_v");
 
+  CollapsibleV = require("" + lib_path + "mixin/collapsible_v");
+
   template = require("" + lib_path + "template/leaf");
+
+  template_collapsed = require("" + lib_path + "template/leaf_collapsed");
 
   module.exports = Months = (function(_super) {
 
@@ -2441,18 +2934,24 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
 
     Months.include(GridableV);
 
+    Months.include(CollapsibleV);
+
     function Months(_view_model_, bounds_obj, _config_) {
-      var bus_name, observer;
+      var bus_name;
       this._view_model_ = _view_model_;
       this._config_ = _config_ != null ? _config_ : {};
       this._handler = __bind(this._handler, this);
 
-      observer = this._view_model_.getObserverObject();
+      this._observer_ = this._view_model_.getObserverObject();
       bus_name = this._view_model_.getNotificationBusName();
-      observer.subscribe(bus_name, this._updateData, this);
+      this._observer_.subscribe(bus_name, this._updateData, this);
+      this._who_i_am_ = 'MONTHS';
+      this._element_collapsed_ || (this._element_collapsed_ = this._config_.is_collapsed);
+      if (this._config_.is_collapsible) {
+        this.subscribeToCollapsibleEvent(this._collapseElement);
+      }
       this._bounds_ = bounds_obj.transformToBoundsFor('months');
-      this._all_months_names_ = this._view_model_.getAllMonths(this._config_.format);
-      this._morph_ = Metamorph(this._renderContent());
+      this._morph_ = Metamorph(this._contentBuilder());
     }
 
     /*
@@ -2461,7 +2960,10 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
 
 
     Months.prototype.createView = function() {
-      return $('<div>').on("click", "li", this._handler).append(this._morph_.outerHTML());
+      var _this = this;
+      return $('<div>').on("click", "li", this._handler).on("click", "li", function() {
+        return _this._collapseOthers();
+      }).append(this._morph_.outerHTML());
     };
 
     /*
@@ -2470,13 +2972,22 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
 
 
     /*
+      This method return all months names
+    */
+
+
+    Months.prototype._getAllMonthsNames = function() {
+      return this._view_model_.getAllMonths(this._config_.format);
+    };
+
+    /*
       Create content for Morph object
     */
 
 
     Months.prototype._renderContent = function() {
       return template({
-        range: this._compileSplittedRange(this._all_months_names_.slice(0), this._config_.row_length),
+        range: this._compileSplittedRange(this._getAllMonthsNames(), this._config_.row_length),
         selected: this._view_model_.getMonth()
       });
     };
@@ -2499,7 +3010,34 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
 
 
     Months.prototype._updateData = function() {
-      return this._morph_.html(this._renderContent());
+      return this._morph_.html(this._contentBuilder());
+    };
+
+    /*
+      Content builder selector
+    */
+
+
+    Months.prototype._contentBuilder = function() {
+      if (this._isCollapsed()) {
+        return this._renderCollapsedContent();
+      } else {
+        return this._renderContent();
+      }
+    };
+
+    /*
+      This method for rendering collapsed content
+    */
+
+
+    Months.prototype._renderCollapsedContent = function() {
+      return template_collapsed({
+        value: {
+          name: this._view_model_.getMonth(this._config_.format_collapsed || this._config_.format),
+          number: this._view_model_.getMonth()
+        }
+      });
     };
 
     /*
@@ -2528,14 +3066,151 @@ This View module itself for months selector ([Jan][Feb][Mar]) - this like
   })(MixinSupported);
 
 }).call(this);
-}, "view/years": function(exports, require, module) {
+}, "view/non_modal": function(exports, require, module) {
 /*
-This View module for years grid
+This is non-modal form for Product, try to use it as base
 */
 
 
 (function() {
-  var $, GridableV, MixinSupported, Years, lib_path, template,
+  var $, Modal, lib_path,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  if (!this.Metamorph) {
+    throw Error("sorry, resolve Methamorph dependency first!");
+  }
+
+  $ = jQuery;
+
+  lib_path = typeof GLOBAL !== "undefined" && GLOBAL !== null ? '../' : '';
+
+  module.exports = Modal = (function() {
+
+    function Modal(_wibget_obj_, _caption_vm_, _config_) {
+      var bus_name, observer;
+      this._wibget_obj_ = _wibget_obj_;
+      this._caption_vm_ = _caption_vm_;
+      this._config_ = _config_ != null ? _config_ : {};
+      this._placeWrapper = __bind(this._placeWrapper, this);
+
+      this._showWrapper = __bind(this._showWrapper, this);
+
+      this._uuid_ = this._wibget_obj_.getUUID();
+      this._target_ = this._wibget_obj_.getTarget();
+      this._user_data_changed_cb_ = this._wibget_obj_.getUserDataChangedCb();
+      observer = this._caption_vm_.getObserverObject();
+      bus_name = this._caption_vm_.getNotificationBusName();
+      if (this._config_.target.fill_on_init) {
+        this._user_data_changed_cb_.call(this);
+      }
+      observer.subscribe(bus_name, this._user_data_changed_cb_, this);
+      this._wrapper_ = this._createWrapper(this._uuid_);
+    }
+
+    /*
+      Wrapper for modal view
+    */
+
+
+    Modal.prototype._createWrapper = function(uuid) {
+      return $('<div>', {
+        id: "datapicker-" + uuid,
+        "class": 'datepicker dropdown-menu'
+      });
+    };
+
+    /*
+      This method inject all result to page, or target element
+    */
+
+
+    Modal.prototype.inject = function(layout) {
+      this._wrapper_.append(layout).appendTo('body');
+      /*
+          FIXME!
+          many strange things happened with target, later sand it out
+          for now its ok, but you are owe, remember!!!
+      */
+
+      $(this._target_).on('click', this._showWrapper);
+      $(this._target_).addClass('hasDatePalette');
+      this._setOutsideClickHandler();
+      return false;
+    };
+
+    /*
+      Return formatted data as string
+    */
+
+
+    Modal.prototype.getResult = function() {
+      return this._caption_vm_.getCaption(this._config_.target.format);
+    };
+
+    /*
+      This method setup hider for datapicker if user click somewhere outside it
+    */
+
+
+    Modal.prototype._setOutsideClickHandler = function() {
+      var _this = this;
+      $(document).on('mousedown', function(evnt) {
+        if (!$(evnt.target).closest('.datepicker').length) {
+          return _this._wrapper_.hide();
+        }
+      });
+      return null;
+    };
+
+    /*
+      This is our 'show' event handler
+    */
+
+
+    Modal.prototype._showWrapper = function(evnt) {
+      this._wrapper_.toggle();
+      this._placeWrapper();
+      return false;
+    };
+
+    /*
+      This is wrapper GPS :)
+    */
+
+
+    Modal.prototype._placeWrapper = function() {
+      var filter_function, height, offset, zIndex;
+      filter_function = function() {
+        return $(this).css('z-index') !== 'auto';
+      };
+      height = $(this._target_).outerHeight();
+      zIndex = parseInt(this._wrapper_.parents().filter(filter_function).first().css('z-index'));
+      zIndex += 10;
+      offset = $(this._target_).offset();
+      return this._wrapper_.css({
+        top: offset.top + height,
+        left: offset.left
+      });
+    };
+
+    return Modal;
+
+  })();
+
+}).call(this);
+}, "view/years_collapsible": function(exports, require, module) {
+/*
+Its collapsible year
+
+Реализация как и у коллапсирующего месяца, во всяком случае пока.
+
+Не возможно проверить работу коллапсации, 
+  когда у тебя есть всего одна бойцовская рыбка :)
+*/
+
+
+(function() {
+  var $, CollapsibleV, FormattableV, GridableV, MixinSupported, Years, lib_path, template, template_collapsed,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2552,7 +3227,13 @@ This View module for years grid
 
   GridableV = require("" + lib_path + "mixin/gridable_v");
 
+  CollapsibleV = require("" + lib_path + "mixin/collapsible_v");
+
+  FormattableV = require("" + lib_path + "mixin/formattable_view");
+
   template = require("" + lib_path + "template/leaf");
+
+  template_collapsed = require("" + lib_path + "template/leaf_collapsed");
 
   module.exports = Years = (function(_super) {
 
@@ -2560,18 +3241,27 @@ This View module for years grid
 
     Years.include(GridableV);
 
+    Years.include(CollapsibleV);
+
+    Years.include(FormattableV);
+
     function Years(_year_vm_, bounds_obj, _config_) {
-      var bus_name, observer;
+      var bus_name;
       this._year_vm_ = _year_vm_;
       this._config_ = _config_ != null ? _config_ : {};
       this._handler = __bind(this._handler, this);
 
-      observer = this._year_vm_.getObserverObject();
+      this._observer_ = this._year_vm_.getObserverObject();
       bus_name = this._year_vm_.getNotificationBusName();
-      observer.subscribe(bus_name, this._updateData, this);
-      this._formatter_ = this._makeFormatter(this._config_.format);
+      this._observer_.subscribe(bus_name, this._updateData, this);
+      this._who_i_am_ = 'YEARS';
+      this._element_collapsed_ || (this._element_collapsed_ = this._config_.is_collapsed);
+      if (this._config_.is_collapsible) {
+        this.subscribeToCollapsibleEvent(this._collapseElement);
+      }
+      this._formatter_ = this.getFormatter('years', this._config_.format);
       this._bounds_ = bounds_obj.transformToBoundsFor('years');
-      this._morph_ = Metamorph(this._renderContent());
+      this._morph_ = Metamorph(this._contentBuilder());
     }
 
     /*
@@ -2580,7 +3270,10 @@ This View module for years grid
 
 
     Years.prototype.createView = function() {
-      return $('<div>').on("click", "li", this._handler).append(this._morph_.outerHTML());
+      var _this = this;
+      return $('<div>').on("click", "li", this._handler).on("click", "li", function() {
+        return _this._collapseOthers();
+      }).append(this._morph_.outerHTML());
     };
 
     /*
@@ -2614,30 +3307,39 @@ This View module for years grid
     };
 
     /*
-      Formatter for years
-    */
-
-
-    Years.prototype._makeFormatter = function(format) {
-      switch (format.toUpperCase()) {
-        case "YY":
-          return function(year) {
-            return ("" + year).slice(-2);
-          };
-        case "YYYY":
-          return function(year) {
-            return "" + year;
-          };
-      }
-    };
-
-    /*
       Update Morph data, data re-render automatically
     */
 
 
     Years.prototype._updateData = function() {
-      return this._morph_.html(this._renderContent());
+      return this._morph_.html(this._contentBuilder());
+    };
+
+    /*
+      Content builder selector
+    */
+
+
+    Years.prototype._contentBuilder = function() {
+      if (this._isCollapsed()) {
+        return this._renderCollapsedContent();
+      } else {
+        return this._renderContent();
+      }
+    };
+
+    /*
+      This method for rendering collapsed content
+    */
+
+
+    Years.prototype._renderCollapsedContent = function() {
+      return template_collapsed({
+        value: {
+          name: this._year_vm_.getYear(this._config_.format_collapsed || this._config_.format),
+          number: this._year_vm_.getYear()
+        }
+      });
     };
 
     /*
